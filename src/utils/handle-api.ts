@@ -1,4 +1,4 @@
-export interface NewsData {
+export type NewsData = {
   id: number;
   title: string;
   summary: string;
