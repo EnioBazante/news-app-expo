@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, ScrollView, SafeAreaView, FlatList, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, FlatList, ActivityIndicator } from 'react-native';
 import NewsItem from '../../src/components/NewsItem';
-
 import { fetchNewsService, NewsData } from '../../src/utils/handle-api';
 
 export default function NewsList() {
@@ -13,18 +12,6 @@ export default function NewsList() {
   useEffect(() => {
     fetchNews();
   }, []);
-  
-  
-// type
-//   data == export interface NewsData {
-//   id: number;
-//   title: string;
-//   summary: string;
-//   link: string;
-//   published: string;
-//   image?: string | null;
-//      }
-
 
   const fetchNews = async () => {
     try {
@@ -38,40 +25,48 @@ export default function NewsList() {
     }
   };
 
-  const renderItem = ({
+  const renderItem = ({ item }: { item: NewsData }) => (
+    <NewsItem
+      title={item.title}
+      image={item.image}
+      published={item.published}
+      link={item.link}
+    />
+  );
 
+  const renderEmpty = () => (
+    <View style={styles.centerContainer}>
+      <Text style={styles.emptyText}>Nenhuma notícia encontrada.</Text>
+    </View>
+  );
 
-  })
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text style={styles.loadingText}>Carregando notícias...</Text>
+      </View>
+    );
+  }
 
-
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>Erro: {error}</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      {loading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
-          <Text style={styles.loadingText}>Carregando notícias...</Text>
-        </View>
-      ) : error ? (
-        <View style={styles.centerContainer}>
-          <Text style={styles.errorText}>Erro: {error}</Text>
-        </View>
-      ) : (
-
-
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {newsList.map((item) => (
-            <NewsItem
-              key={item.id.toString()}
-              title={item.title}
-              image={item.image}
-              published={item.published}
-              link={item.link}
-            />
-          ))}
-        </ScrollView>
-      )}
+      <FlatList
+        data={newsList}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmpty}
+        contentContainerStyle={styles.listContent}
+      />
     </SafeAreaView>
   );
 }
@@ -80,18 +75,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-  },
-  header: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    alignItems: 'center',
-    paddingTop: 40, // Ensure header is spaced from exact top
-  },
-  headerTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
   },
   centerContainer: {
     flex: 1,
@@ -107,7 +90,11 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 16,
   },
-  scrollContent: {
+  emptyText: {
+    fontSize: 16,
+    color: '#999',
+  },
+  listContent: {
     padding: 16,
   },
 });
